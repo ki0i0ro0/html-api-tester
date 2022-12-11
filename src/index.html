@@ -3,6 +3,7 @@
   <head></head>
 
   <body>
+    <p><button onclick="getSWAPI()">APIリクエスト</button></p>
     <p>WebSocket受信　行数：<label id="text_count">0</label>　状態：<label id="ws_status">OFF</label>　WSモード：<label id="ws_mode">開発</label></p>
     <textarea id="output" style="min-width: 100%; min-height: 60vh" wrap="off" readonly></textarea>
     <button onclick="clearTextRcv()">クリア</button>
@@ -18,7 +19,6 @@
     <label for="mode">New WS</label>
     <input type="checkbox" id="filter" name="filter" onchange="handleCheckBoxChanged('filter')" />
     <label for="filter">filter</label>
-    <button onclick="getMovie()">停止</button>
 
     <script type="text/javascript">
       const API_KEY = ""
@@ -29,7 +29,7 @@
           method: type,
           headers: {
             "Content-Type": "application/json",
-            "X-API-KEY": API_KEY,
+            // "X-API-KEY": API_KEY,
           },
           body,
         })
@@ -45,6 +45,20 @@
       }
 
       const saveText = (key) => localStorage.setItem(key, document.getElementById(key).value)
+
+      /**
+       * スターウォーズAPIから値を取得するテスト
+       */
+      const getSWAPI = async () => {
+        console.time("API")
+        const result = await requestAPI("https://swapi.dev/api/people/1", "GET")
+        console.timeEnd("API")
+
+        console.log(result)
+        let json = JSON.stringify(result, null, "\t")
+        const textElem = document.querySelector("#output")
+        textElem.innerHTML = json
+      }
 
       /** 連続送信の際のカウントアップ数(ミリ秒) */
       const COUNT_UP_MS = 100
