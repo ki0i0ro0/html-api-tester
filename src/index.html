@@ -3,14 +3,19 @@
   <head></head>
 
   <body>
-    <p><button onclick="getSWAPI()">APIリクエスト</button></p>
+    <p><button onclick="saveLocalStorage()">現在の値を保存</button><button onclick="outputLocalStorage()">現在の値をファイルに保存</button><input type="file" id="selected-file" /></p>
+    <p><button onclick="addBox()">新規追加</button></p>
+    <div id="input-box">
+      <div id="box">
+        url:<input type="text" id="url-text" />
+        <button onclick="getAPI()">APIリクエスト</button>
+        <textarea id="output" style="min-width: 100%; min-height: 1em" wrap="off" readonly></textarea>
+      </div>
+    </div>
     <p>WebSocket受信　行数：<label id="text_count">0</label>　状態：<label id="ws_status">OFF</label>　WSモード：<label id="ws_mode">開発</label></p>
-    <textarea id="output" style="min-width: 100%; min-height: 60vh" wrap="off" readonly></textarea>
     <button onclick="clearTextRcv()">クリア</button>
-    <input type="text" id="url-text" />
+
     <button onclick="copyToClipboard()">コピー</button>
-    <button onclick="saveFile()">保存</button>
-    <button onclick="saveLocalStorage()">現在の値を保存</button>
     <p>WebSocket送信</p>
     <textarea id="input" style="min-width: 100%; min-height: 1em"></textarea>
     <button onclick="sendText()">送信</button>
@@ -21,10 +26,45 @@
     <label for="filter">filter</label>
 
     <script type="text/javascript">
+      const selectedFileElement = document.getElementById("selected-file")
+      selectedFileElement.addEventListener(
+        "change",
+        (event) => {
+          const file = event.target.files
+          const reader = new FileReader()
+          reader.readAsText(file[0])
+          reader.onload = (ev) => {
+            setValueFromFile(reader.result)
+            setValuesFromLocalStorage()
+          }
+        },
+        false
+      )
+
+      const addBox = () => {
+        let elements = document.getElementById("input-box")
+        const p1 = document.createElement("p")
+        const text1 = document.createTextNode("テスト")
+        // text1.setAttribute("id", "tes")
+        // p1.appendChild(text1)
+        // elements.appendChild(p1)
+        let copied = elements.lastElementChild.cloneNode(true)
+        copied.id = "test22"
+        copied.childNodes.forEach((node) => {
+          node.id = node.id + "1"
+          if (node.value) {
+            // URLの値を削除
+            node.value = ""
+          }
+        })
+        elements.appendChild(copied)
+      }
+
       const API_KEY = ""
 
       const requestAPI = async (url, type, data = {}) => {
         const body = ["POST", "PUT"].includes(type) ? JSON.stringify(data) : null
+        console.time("API" + url)
         const response = await fetch(url, {
           method: type,
           headers: {
@@ -33,6 +73,7 @@
           },
           body,
         })
+        console.timeEnd("API" + url)
         return response.json()
       }
 
@@ -40,8 +81,35 @@
         saveText("url-text")
       }
 
+      const outputLocalStorage = () => {
+        const outArray = []
+        outArray.push(loadValueFromLocalStorage("url-text"))
+        outArray.push(loadValueFromLocalStorage("url-text2"))
+        const outObject = Object.fromEntries(outArray)
+        const outText = JSON.stringify(outObject)
+        saveFile(outText)
+      }
+
+      // ファイルから取得した値をローカルストレージに保存
+      const setValueFromFile = (text) => {
+        const object = JSON.parse(text)
+        Object.keys(object).forEach((key) => {
+          localStorage.setItem(key, object[key])
+        })
+      }
+
+      // ローカルストレージにある値を一括でテキストエレメントに設定
+      const setValuesFromLocalStorage = () => {
+        setValueFromLocalStorage("url-text")
+      }
+
+      // ローカルストレージにある値をテキストエレメントに設定
       const setValueFromLocalStorage = (key) => {
         document.getElementById(key).value = localStorage.getItem(key)
+      }
+
+      const loadValueFromLocalStorage = (key) => {
+        return [key, localStorage.getItem(key)]
       }
 
       const saveText = (key) => localStorage.setItem(key, document.getElementById(key).value)
@@ -49,15 +117,15 @@
       /**
        * スターウォーズAPIから値を取得するテスト
        */
-      const getSWAPI = async () => {
-        console.time("API")
-        const result = await requestAPI("https://swapi.dev/api/people/1", "GET")
-        console.timeEnd("API")
-
-        console.log(result)
+      const getAPI = async (e) => {
+        e = e || window.event
+        const elem = e.target || e.srcElement
+        const elemId = elem.id
+        const url = document.getElementById("url-text" + elemId).value
+        const result = await requestAPI(url, "GET")
         let json = JSON.stringify(result, null, "\t")
-        const textElem = document.querySelector("#output")
-        textElem.innerHTML = json
+        const textElement = document.querySelector("#output" + elemId)
+        textElement.innerHTML = json
       }
 
       /** 連続送信の際のカウントアップ数(ミリ秒) */
@@ -106,16 +174,15 @@
       }
 
       /** ファイルに保存 */
-      const saveFile = () => {
-        if (wsReceived.length < 1) {
+      const saveFile = (text) => {
+        if (text.length < 1) {
           alert("保存するデータがありません")
           return
         }
-        const msg = wsReceived.join("\n")
-        const blob = new Blob([msg], { type: "text/plain" })
+        const blob = new Blob([text], { type: "text/plain" })
         const link = document.createElement("a")
         link.href = URL.createObjectURL(blob)
-        link.download = `ws-log_${formatDate(new Date(), "yyyyMMddHHmmss")}.log`
+        link.download = `storage_${formatDate(new Date(), "yyyyMMddHHmmss")}.json`
         link.click()
       }
 
@@ -237,7 +304,7 @@
       // eslint-disable-next-line no-extra-semi
       ;(() => {
         document.addEventListener("DOMContentLoaded", () => {
-          setValueFromLocalStorage("url-text")
+          setValuesFromLocalStorage()
           // getLocalStorageData()
           // // クエリパラメーター取得
           // const wsMode = true // TODO: プロジェクト毎に設定
