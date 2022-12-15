@@ -11,13 +11,13 @@
       ><input type="file" id="selected-file" />
     </p>
     <p><button onclick="addBox()">新規追加</button></p>
-    <p><button onclick="setTable()">新規追加</button></p>
-    <div id="input-box">
+    <p><button onclick="setTable()">テーブル追加</button></p>
+    <div id="input_box">
       <div id="box">
-        url:<input type="text" id="url-text" />
-        <button onclick="getAPI()">APIリクエスト</button>
+        url:<input type="text" id="url_text_1" />
+        <button id="button_1" onclick="getAPI()">APIリクエスト</button>
         <textarea
-          id="output"
+          id="output_1"
           style="min-width: 100%; min-height: 1em"
           wrap="off"
           readonly

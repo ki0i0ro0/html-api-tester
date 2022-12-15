@@ -94,12 +94,13 @@ function addRow() {
  *
  */
 const addBox = () => {
-  let elements = document.getElementById("input-box")
+  let elements = document.getElementById("input_box")
   const p1 = document.createElement("p")
   const text1 = document.createTextNode("テスト")
   // text1.setAttribute("id", "tes")
   // p1.appendChild(text1)
   // elements.appendChild(p1)
+  //
   let copied = elements.lastElementChild.cloneNode(true)
   copied.id = "test22"
   copied.childNodes.forEach((node) => {
@@ -139,14 +140,25 @@ const requestAPI = async (url, type, data = {}) => {
   return response.json()
 }
 
+/**
+ * ローカルストレージに値を保存
+ */
 const saveLocalStorage = () => {
-  saveText("url-text")
+  const elements = document.getElementById("input_box")
+  const count = elements.childElementCount
+  for (let i = 0; i < count; i++) {
+    console.log(`url_text_${i + 1}`)
+    saveText(`url_text_${i + 1}`)
+  }
 }
 
+/**
+ * ローカルストレージの値をファイルに保存
+ */
 const outputLocalStorage = () => {
   const outArray = []
-  outArray.push(loadValueFromLocalStorage("url-text"))
-  outArray.push(loadValueFromLocalStorage("url-text2"))
+  outArray.push(loadValueFromLocalStorage("url_text_1"))
+  outArray.push(loadValueFromLocalStorage("url_text_2"))
   const outObject = Object.fromEntries(outArray)
   const outText = JSON.stringify(outObject)
   saveFile(outText)
@@ -167,7 +179,7 @@ const setValueFromFile = (text) => {
  * ローカルストレージにある値を一括でテキストエレメントに設定
  */
 const setValuesFromLocalStorage = () => {
-  setValueFromLocalStorage("url-text")
+  setValueFromLocalStorage("url_text_1")
 }
 
 /**
@@ -202,7 +214,7 @@ const getAPI = async (e) => {
   e = e || window.event
   const elem = e.target || e.srcElement
   const elemId = elem.id
-  const url = document.getElementById("url-text" + elemId).value
+  const url = document.getElementById("url_text" + elemId).value
   const result = await requestAPI(url, "GET")
   let json = JSON.stringify(result, null, "\t")
   const textElement = document.querySelector("#output" + elemId)
