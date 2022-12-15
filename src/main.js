@@ -94,20 +94,23 @@ function addRow() {
  *
  */
 const addBox = () => {
-  let elements = document.getElementById("input_box")
-  const p1 = document.createElement("p")
-  const text1 = document.createTextNode("テスト")
-  // text1.setAttribute("id", "tes")
-  // p1.appendChild(text1)
-  // elements.appendChild(p1)
-  //
-  let copied = elements.lastElementChild.cloneNode(true)
-  copied.id = "test22"
+  const elements = document.getElementById("input_box")
+  const copied = elements.lastElementChild.cloneNode(true)
+  let i = elements.childElementCount + 1
   copied.childNodes.forEach((node) => {
-    node.id = node.id + "1"
-    if (node.value) {
-      // URLの値を削除
-      node.value = ""
+    if (node.id) {
+      if (node.id.indexOf("url_text_") !== -1) {
+        console.log
+        node.id = "url_text_" + i
+      } else if (node.id.indexOf("output_") !== -1) {
+        node.id = "output_" + i
+      } else {
+        node.id = i
+      }
+      if (node.value) {
+        // URLの値を削除
+        node.value = ""
+      }
     }
   })
   elements.appendChild(copied)
@@ -145,11 +148,11 @@ const requestAPI = async (url, type, data = {}) => {
  */
 const saveLocalStorage = () => {
   const elements = document.getElementById("input_box")
-  const count = elements.childElementCount
-  for (let i = 0; i < count; i++) {
+  for (let i = 0; i < elements.childElementCount; i++) {
     console.log(`url_text_${i + 1}`)
     saveText(`url_text_${i + 1}`)
   }
+  localStorage.setItem("total_count", elements.childElementCount.toString())
 }
 
 /**
@@ -157,8 +160,10 @@ const saveLocalStorage = () => {
  */
 const outputLocalStorage = () => {
   const outArray = []
-  outArray.push(loadValueFromLocalStorage("url_text_1"))
-  outArray.push(loadValueFromLocalStorage("url_text_2"))
+  const elements = document.getElementById("input_box")
+  for (let i = 0; i < elements.childElementCount; i++) {
+    outArray.push(loadValueFromLocalStorage(`url_text_${i + 1}`))
+  }
   const outObject = Object.fromEntries(outArray)
   const outText = JSON.stringify(outObject)
   saveFile(outText)
@@ -179,7 +184,16 @@ const setValueFromFile = (text) => {
  * ローカルストレージにある値を一括でテキストエレメントに設定
  */
 const setValuesFromLocalStorage = () => {
-  setValueFromLocalStorage("url_text_1")
+  const totalCount = localStorage.getItem("total_count")
+  if (totalCount) {
+    for (let i = 0; i < Number(totalCount); i++) {
+      const key = `url_text_${i + 1}`
+      if (!document.getElementById(key)) {
+        addBox()
+      }
+      setValueFromLocalStorage(key)
+    }
+  }
 }
 
 /**
@@ -214,10 +228,10 @@ const getAPI = async (e) => {
   e = e || window.event
   const elem = e.target || e.srcElement
   const elemId = elem.id
-  const url = document.getElementById("url_text" + elemId).value
+  const url = document.getElementById("url_text_" + elemId).value
   const result = await requestAPI(url, "GET")
   let json = JSON.stringify(result, null, "\t")
-  const textElement = document.querySelector("#output" + elemId)
+  const textElement = document.getElementById("output_" + elemId)
   textElement.innerHTML = json
 }
 
