@@ -7,8 +7,8 @@
     <div id="main_table"></div>
     <p>
       <button onclick="saveLocalStorage()">現在の値を保存</button
-      ><button onclick="outputLocalStorage()">現在の値をファイルに保存</button
-      ><input type="file" id="selected-file" />
+      ><button onclick="createFileFromLocalStorage()">現在の値をファイルに保存</button
+      ><input type="file" id="selected_file" />
     </p>
     <p><button onclick="addBox()">新規追加</button></p>
     <p><button onclick="setTable()">テーブル追加</button></p>
@@ -25,9 +25,7 @@
       </div>
     </div>
     <p>
-      WebSocket受信　行数：<label id="text_count">0</label>　状態：<label
-        id="ws_status"
-        >OFF</label
+      WebSocket受信　行数：<label id="text_count">0</label>　状態：<label id="ws_status">OFF</label
       >　WSモード：<label id="ws_mode">開発</label>
     </p>
     <button onclick="clearTextRcv()">クリア</button>
@@ -39,12 +37,7 @@
     <input type="file" id="upload_file" name="upload_file" /><br />
     <input type="checkbox" id="mode" name="mode" checked />
     <label for="mode">New WS</label>
-    <input
-      type="checkbox"
-      id="filter"
-      name="filter"
-      onchange="handleCheckBoxChanged('filter')"
-    />
+    <input type="checkbox" id="filter" name="filter" onchange="handleCheckBoxChanged('filter')" />
     <label for="filter">filter</label>
     <script src="main.js"></script>
   </body>
